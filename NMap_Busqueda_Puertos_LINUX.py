@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import re
+import random
 
 # Puertos comunes para escanear en una red con -PS y -PA
 common_ports = [21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 
@@ -10,31 +11,34 @@ def run_nmap(ip):
     # Convertir la lista de puertos a una cadena separada por comas
     ports_str = ",".join(map(str, common_ports))
     
+    # Longitud de datos extra para enviar en las cabezeras de los paquetes
+    extra_data_len = random.randint(1, 8)
+    
     # Comando Nmap para escanear puertos y servicios
     command = [
-        "sudo", "nmap", "-sS", "-T3", "-p-", "-sV", "--version-intensity", "1",
-        "-Pn", "-v", "--randomize-hosts", "-f", "-D", "RND:10",
-        f"-PS{ports_str}", f"-PA{ports_str}", ip
+        "sudo", "nmap", "-sS", "-T3", "-p-", "-sV", "--version-intensity", "5",
+        "-Pn", "-v", "--randomize-hosts", "-f", "-n", "-D", "RND:10", f"--data-length {extra_data_len}",
+        f"-PS{ports_str}", f"-PA{ports_str}", "--open", "--min-rate 5000", ip
     ]
     
     # Prueba ejecución de comando
     func_aux_command(command)
     
-    # try:
-    #     # Ejecutar el comando y capturar la salida
-    #     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    #     output = result.stdout
-    #     print(output)
+    try:
+        # Ejecutar el comando y capturar la salida
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        output = result.stdout
+        print(output)
         
-    #     if result.stderr:
-    #         print(f"Error: {result.stderr}", file=sys.stderr)
+        if result.stderr:
+            print(f"Error: {result.stderr}", file=sys.stderr)
 
     #     # Analizar la salida para obtener TTL, tamaño de ventana y realizar banner grabbing
     #     determine_os(output)
     #     banner_grabbing(output, ip_cidr)
         
-    # except Exception as e:
-    #     print(f"Exception occurred: {e}", file=sys.stderr)
+    except Exception as e:
+        print(f"Exception occurred: {e}", file=sys.stderr)
         
 def func_aux_command(command):
     # Construir el comando como una cadena de texto
@@ -140,12 +144,12 @@ if __name__ == "__main__":
     
     if tipo_entrada == "cidr":
         print(f"Procesando red CIDR: {entrada_usuario}")
-        # Llamar a la función para escanear la red CIDR
+        # Llamar a la función para escanear la red CIDR (red de hosts)
         run_nmap(ip)
         
     elif tipo_entrada == "ip":
         print(f"Procesando dirección IP: {entrada_usuario}")
-        # Llamar a la función para escanear la dirección IP
+        # Llamar a la función para escanear la dirección IP (host)
         run_nmap(ip)
         
     else:
