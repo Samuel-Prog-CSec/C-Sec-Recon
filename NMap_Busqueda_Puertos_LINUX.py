@@ -12,26 +12,35 @@ def run_nmap(ip):
     ports_str = ",".join(map(str, common_ports))
     
     # Longitud de datos extra para enviar en las cabezeras de los paquetes
-    extra_data_len = random.randint(1, 8)
+    extra_data_len = random.randint(5, 10)
     
     # Comando Nmap para escanear puertos y servicios
     command = [
         "sudo", "nmap", "-sS", "-T3", "-p-", "-sV", "--version-intensity", "5",
-        "-Pn", "-v", "--randomize-hosts", "-f", "-n", "-D", "RND:10", f"--data-length {extra_data_len}",
-        f"-PS{ports_str}", f"-PA{ports_str}", "--open", "--min-rate 5000", ip
+        "-Pn", "-v", "--randomize-hosts", "-f", "-n", "-D", "RND:10", f"--data-length={extra_data_len}",
+        f"-PS{ports_str}", f"-PA{ports_str}", "--min-rate=5000", ip
     ]
+    
+    # 10.0.2.15/24
     
     # Prueba ejecución de comando
     func_aux_command(command)
     
     try:
-        # Ejecutar el comando y capturar la salida
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        output = result.stdout
-        print(output)
+        # Ejecutar el comando y capturar la salida en tiempo real
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip())
+        rc = process.poll()
         
-        if result.stderr:
-            print(f"Error: {result.stderr}", file=sys.stderr)
+        if rc != 0:
+            for line in process.stderr:
+                print(f"Error: {line}", file=sys.stderr)
 
     #     # Analizar la salida para obtener TTL, tamaño de ventana y realizar banner grabbing
     #     determine_os(output)
