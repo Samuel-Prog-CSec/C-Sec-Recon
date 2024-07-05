@@ -5,7 +5,7 @@ Este script en Python realiza un escaneo de red utilizando Nmap, obteniendo info
 ## Explicación del Comando Nmap Utilizado
 
 ```sh
-sudo nmap -sS -T3 -p- -sV --version-intensity 1 -Pn -v --randomize-hosts -f -D RND:10 -PS80,443,22 -PA80,443,22 <ip>
+sudo nmap -sS -T3 -p- -sV --version-intensity 1 -Pn -v --randomize-hosts -f -D RND:10 -PS80,443,22 -PA80,443,22 <ip_cidr>
 ```
 
 * sudo nmap: Ejecuta Nmap con privilegios de superusuario.
